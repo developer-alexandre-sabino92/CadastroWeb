@@ -7,6 +7,23 @@ import sqlalchemy
 import locale
 from datetime import datetime
 
+app = Flask(__name__)
+
+app.config['SECRET_KEY'] = 'e14fbbd6f299c6454f3094c9db985177'
+if os.getenv("DATABASE_URL"):
+    uri = os.getenv("DATABASE_URL")
+    if uri.startswith("postgres://"):
+        uri = uri.replace("postgres://", "postgresql://", 1)
+    app.config['SQLALCHEMY_DATABASE_URI'] = uri
+else:
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///cooperativa.db'
+
+database = SQLAlchemy(app)
+bcrypt = Bcrypt(app)
+login_manager = LoginManager(app)
+login_manager.login_view = 'login'
+login_manager.login_message_category = 'alert-info'
+
 # Configura formatação de moeda e data para o Brasil
 try:
     locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8')
@@ -26,23 +43,6 @@ def format_date(value):
         return datetime.strptime(str(value), "%Y-%m-%d").strftime('%d/%m/%Y')
     except:
         return value
-
-app = Flask(__name__)
-
-app.config['SECRET_KEY'] = 'e14fbbd6f299c6454f3094c9db985177'
-if os.getenv("DATABASE_URL"):
-    uri = os.getenv("DATABASE_URL")
-    if uri.startswith("postgres://"):
-        uri = uri.replace("postgres://", "postgresql://", 1)
-    app.config['SQLALCHEMY_DATABASE_URI'] = uri
-else:
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///cooperativa.db'
-
-database = SQLAlchemy(app)
-bcrypt = Bcrypt(app)
-login_manager = LoginManager(app)
-login_manager.login_view = 'login'
-login_manager.login_message_category = 'alert-info'
 
 # Registra filtros no Jinja
 app.jinja_env.filters['currency'] = format_currency
