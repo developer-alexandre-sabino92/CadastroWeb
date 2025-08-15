@@ -24,6 +24,21 @@ login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 login_manager.login_message_category = 'alert-info'
 
+from sistemacooperativa import models
+
+# Verifica e cria tabelas se não existirem
+engine = sqlalchemy.create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
+inspector = sqlalchemy.inspect(engine)
+if not inspector.has_table("usuario"):
+    with app.app_context():
+        database.create_all()
+        print("Base de dados criada")
+else:
+    print("Base de dados já existente")
+
+from sistemacooperativa import routes
+
+
 # Configura formatação de moeda e data para o Brasil
 try:
     locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8')
@@ -48,16 +63,3 @@ def format_date(value):
 app.jinja_env.filters['currency'] = format_currency
 app.jinja_env.filters['brdate'] = format_date
 
-from sistemacooperativa import models
-
-# Verifica e cria tabelas se não existirem
-engine = sqlalchemy.create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
-inspector = sqlalchemy.inspect(engine)
-if not inspector.has_table("usuario"):
-    with app.app_context():
-        database.create_all()
-        print("Base de dados criada")
-else:
-    print("Base de dados já existente")
-
-from sistemacooperativa import routes
